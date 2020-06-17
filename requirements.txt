@@ -1,1 +1,6 @@
 split-folders
+pytorch
+torchvision
+numpy
+tqdm
+cv2

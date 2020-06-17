@@ -8,11 +8,15 @@ from util import EarlyStopping, save_nets, save_predictions, load_best_weights
 from model import UNet
 from dataset import DataFolder
 from tqdm import tqdm
+import matplotlib.pyplot as plt
+import matplotlib as mpl
 import argparse
 
 np. random.seed(1000)
 
-def get_args():
+if __name__ == '__main__':
+    
+	
     parser = argparse.ArgumentParser(description='Train the UNet on images and target masks', \
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -26,11 +30,8 @@ def get_args():
                         help='Early stopping patience.', dest='patience')
     parser.add_argument('-d','--min_delta', type=float, default=0.001,
                         help='Minimum loss improvement for each epoch.', dest='min_delta')
-    return parser.parse_args()
 
-if __name__ == '__main__':
-    
-    args = get_args()
+    args = parser.parse_args()
     print(args)
     
     
@@ -38,21 +39,21 @@ if __name__ == '__main__':
         dataset=DataFolder('new_dataset/train/train_images_256/', 'new_dataset/train/train_masks_256/', 'train'),
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=0
+        num_workers=2
     )
     
     valid_loader = data.DataLoader(
         dataset=DataFolder('new_dataset/val/train_images_256/', 'new_dataset/val/train_masks_256/', 'validation'),
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=2
     )
     
     test_loader = data.DataLoader(
         dataset=DataFolder('new_dataset/test/train_images_256/', 'new_dataset/test/train_masks_256/', 'evaluate'),
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=0
+        num_workers=2
     )
     
     model = UNet(1, shrink=1).cuda()
@@ -119,7 +120,7 @@ if __name__ == '__main__':
         test_loss = []
         for batch_idx, (img, mask, img_fns) in enumerate(test_loader):
     
-            model = load_best_weights(model, 'model')
+            model = load_best_weights(model, 'saved_models')
     
             img = img.cuda()
             mask = mask.cuda()
@@ -138,3 +139,24 @@ if __name__ == '__main__':
             ))
     
     print('FINAL Test Loss: {:.4f}'.format(np.mean(test_loss)))
+    
+
+    fig = plt.figure(figsize=(15,15))
+    
+    cmap = mpl.colors.ListedColormap(['black','blue','red', 'green', 'brown', 'cyan','yellow','royalblue'])
+    cmap.set_over('royalblue')
+    cmap.set_under('black')
+    bounds = [0,1,2,3,4,5,6,7,8]
+    
+    
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    cmap = mpl.colors.LinearSegmentedColormap.from_list('Custom cmap', cmaplist, cmap.N)
+    norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    
+    for idx, pred in enumerate(pred_mask):
+        pred = torch.squeeze(pred, dim=0)
+        ax = fig.add_subplot(3,3, idx+1)
+        img = ax.imshow(pred.cpu().numpy(), interpolation='none', cmap=cmap, norm=norm)
+        fig.colorbar(img)
+        plt.tight_layout()
+        plt.savefig('sav_images/Day0.svg',transparent=True)
