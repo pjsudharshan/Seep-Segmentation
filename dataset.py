@@ -10,6 +10,7 @@ import torchvision
 
 np. random.seed(1000)
 
+
 class DataFolder(data.Dataset):
     def __init__(self, path_img, path_mask, mode):
         self.path_img = path_img
