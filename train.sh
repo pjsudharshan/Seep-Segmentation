@@ -1,1 +1,1 @@
-python split.py && python train.py -tb 8 -e 500
+python split.py && python train.py -tb 8 -e 200

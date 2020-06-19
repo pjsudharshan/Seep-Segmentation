@@ -155,7 +155,7 @@ if __name__ == '__main__':
                 batch_idx+1, len(test_loader), loss.item()
             ))
     
-    print('FINAL Test Loss: {:.4f}'.format(np.mean(test_loss)))
+    print('Final Test Loss: {:.4f}'.format(np.mean(test_loss)))
     
 
     fig = plt.figure(figsize=(15,15))
