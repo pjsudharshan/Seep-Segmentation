@@ -7,7 +7,7 @@ import cv2
 np. random.seed(1000)
 
 def save_nets(nets, model_dir):
-    names = ['unet']
+    names = ['weights_unet']
 
     if not os.path.exists(model_dir):
         print('Creating model directory: {}'.format(model_dir))
@@ -30,7 +30,7 @@ def save_predictions(preds, fns, out_dir):
         assert flag == True 
 
 def load_best_weights(model, model_dir):
-    model.load_state_dict(torch.load('{}/unet.pth'.format(model_dir)))
+    model.load_state_dict(torch.load('{}/weights_unet.pth'.format(model_dir)))
     return model 
 
 
