@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-tb','--batch_size', type=int, default=8,
                         help='Batch size for Training and Testing', dest='batch_size')
-    parser.add_argument('-e','--epochs', type=int, default=100,
+    parser.add_argument('-e','--epochs', type=int, default=200,
                         help='Maximum number of epochs for training', dest='epochs')
     parser.add_argument('-l','--lr', type=float, default=0.001,
                         help='Learning rate.', dest='lr')
@@ -39,21 +39,21 @@ if __name__ == '__main__':
         dataset=DataFolder('new_dataset/train/train_images_256/', 'new_dataset/train/train_masks_256/', 'train'),
         batch_size=args.batch_size,
         shuffle=True,
-        num_workers=2
+        num_workers=4
     )
     
     valid_loader = data.DataLoader(
         dataset=DataFolder('new_dataset/val/train_images_256/', 'new_dataset/val/train_masks_256/', 'validation'),
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=2
+        num_workers=4
     )
     
     test_loader = data.DataLoader(
         dataset=DataFolder('new_dataset/test/train_images_256/', 'new_dataset/test/train_masks_256/', 'evaluate'),
         batch_size=args.batch_size,
         shuffle=False,
-        num_workers=2
+        num_workers=4
     )
     
     model = UNet(1, shrink=1).cuda()
@@ -64,63 +64,80 @@ if __name__ == '__main__':
     criterion = nn.CrossEntropyLoss()
     es = EarlyStopping(min_delta=args.min_delta, patience=args.patience)
     
-    for epoch in tqdm(range(1, args.epochs+1)):
-        with tqdm(total=len(train_loader.dataset), desc=f'Epoch {epoch}/{args.epochs}', unit='img', \
-                  position=0, leave=True) as pbar:
+    train_allepoch_loss = []
+    valid_allepoch_loss = []
     
+    for epoch in range(1, args.epochs+1):
+        with tqdm(total=len(train_loader.dataset), desc=f'Epoch {epoch}/{args.epochs}', unit='img', position=0, leave=True) as pbar:
             train_loss = []
             valid_loss = []
-        
+    
             for batch_idx, (img, mask, _) in enumerate(train_loader):
-        
+    
                 solver.zero_grad()
-        
+    
                 img = img.cuda()
                 mask = mask.cuda()
-        
+    
                 pred = model(img)
                 loss = criterion(pred, mask)
                 pbar.set_postfix(**{'loss (batch)': loss.item()})
                 loss.backward()
                 solver.step()
-        
+    
                 train_loss.append(loss.item())
                 pbar.update(img.shape[0])
             with torch.no_grad():
                 for batch_idx, (img, mask, _) in enumerate(valid_loader):
-        
+    
                     img = img.cuda()
                     mask = mask.cuda()
-        
+    
                     pred = model(img)
                     loss = criterion(pred, mask)
-        
+    
                     valid_loss.append(loss.item())
-        
+                    
+            train_loss_mean = np.mean(train_loss)
+            valid_loss_mean = np.mean(valid_loss)
+    
             print('[EPOCH {}/{}] Train Loss: {:.4f}; Valid Loss: {:.4f}'.format(
-                epoch, args.epochs, np.mean(train_loss), np.mean(valid_loss)
+                epoch, args.epochs, train_loss_mean, valid_loss_mean
             ))
-        
-            flag, best, bad_epochs = es.step(torch.Tensor([np.mean(valid_loss)]))
+    
+            flag, best, bad_epochs = es.step(torch.Tensor([valid_loss_mean]))
             if flag:
                 print('Early stopping criterion met')
                 break
             else:
                 if bad_epochs == 0:
-                    save_nets(nets, 'saved_models')
+                    save_nets(nets, 'saved_model')
                     print('Saving current best model')
-        
-                print('Current Valid loss: {:.4f}; Current best: {:.4f}; Bad epochs: {}'.format(
-                    np.mean(valid_loss), best.item(), bad_epochs
-                ))
     
-    print('Training is over. ')
+                print('Current Valid loss: {:.4f}; Current best: {:.4f}; Bad epochs: {}'.format(
+                    valid_loss_mean, best.item(), bad_epochs
+                ))
+        train_allepoch_loss.append(train_loss_mean)
+        valid_allepoch_loss.append(valid_loss_mean)
+    
+    print('Training is over!!!')
+    
+    
+    plt.figure()
+    plt.plot(np.arange(1,len(train_allepoch_loss)+1), train_allepoch_loss, 'b-', label="Training Set Loss")
+    plt.plot(np.arange(1,len(valid_allepoch_loss)+1), valid_allepoch_loss, 'r-', label="Validation Set Loss")
+    plt.legend(loc="upper right")
+    plt.xlabel('Epochs')
+    plt.ylabel('Cross Entropy Loss')
+    plt.savefig('saved_images/trainval_loss.svg',transparent=True)
+
+    print('Training is over!!!')
     
     with torch.no_grad():
         test_loss = []
         for batch_idx, (img, mask, img_fns) in enumerate(test_loader):
     
-            model = load_best_weights(model, 'saved_models')
+            model = load_best_weights(model, 'saved_model')
     
             img = img.cuda()
             mask = mask.cuda()
@@ -147,8 +164,6 @@ if __name__ == '__main__':
     cmap.set_over('royalblue')
     cmap.set_under('black')
     bounds = [0,1,2,3,4,5,6,7,8]
-    
-    
     cmaplist = [cmap(i) for i in range(cmap.N)]
     cmap = mpl.colors.LinearSegmentedColormap.from_list('Custom cmap', cmaplist, cmap.N)
     norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
@@ -159,4 +174,4 @@ if __name__ == '__main__':
         img = ax.imshow(pred.cpu().numpy(), interpolation='none', cmap=cmap, norm=norm)
         fig.colorbar(img)
         plt.tight_layout()
-        plt.savefig('sav_images/Day0.svg',transparent=True)
+        plt.savefig('saved_images/predictions.svg',transparent=True)

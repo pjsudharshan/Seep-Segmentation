@@ -1,7 +1,7 @@
 Steps to run:
 
 Step 1: Install the requirements mentioned in the file "requirements.txt"
-Step2: Place the dataset files in the folder named "dataset" and then run "bash train.sh" on terminal. It will run for 1000 epochs. If you want to reduce it the number of epochs, just edit the "bash train.sh" file and change the argument to "-e 100".
+Step2: Place the dataset files in the folder named "dataset" and then run "bash train.sh" on terminal. It will run for 500 epochs. If you want to reduce it the number of epochs, just edit the "bash train.sh" file and change the argument to "-e 200".
 At the end, it will print the loss for the test set and it will also save the predicted images in the folder "test_predictions"
 
 If you want to visualize all the processes, open "seep_segmentation.ipynb" using jupyter notebook. Everything is already set up, so you just need to run the whole jupyter notebook file.
@@ -10,7 +10,7 @@ Extras:
 If you want to run separately instead of bash. 
 Run "split.py" and then the below:
 
-Run: "python train.py -help" to know about the command line arguments to passed.
+Run: "python train.py -help" to know about the command line arguments to be passed.
 Example Run: "python train.py -tb 8 -e 100"
 
 
