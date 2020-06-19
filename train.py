@@ -50,7 +50,7 @@ if __name__ == '__main__':
     )
     
     test_loader = data.DataLoader(
-        dataset=DataFolder('new_dataset/test/train_images_256/', 'new_dataset/test/train_masks_256/', 'evaluate'),
+        dataset=DataFolder('new_dataset/test/train_images_256/', 'new_dataset/test/train_masks_256/', 'test'),
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=4
