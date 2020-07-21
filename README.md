@@ -27,17 +27,17 @@ The loss function chosen for this task is cross entropy loss. The reason why I c
 
 The data was split into ~70%:~15%:~15% between training, validation and test set resp.  
 So,  
-train images: 553  
-validation images : 118  
-test images: 119  
+  * train images: 553  
+  * validation images : 118  
+  * test images: 119  
 
 I had setup the program to run until 200 epochs. Since the Early Stopping was setup, it was stopped early at 139th epoch as there was no minimum decrease (min_delta=0.001) in the Cross Entropy Loss for straight 10 epochs (patience = 10).  
-
+```
 Final Test Set Cross Entropy Loss obtained: 0.0682 (after 139 epochs).  
-
-⋅⋅* In the "saved_images" folder which contains some visualizations:
+```
+  * In the "saved_images" folder which contains some visualizations:
 File named "predictions.svg" contains the last batch of predictions of the test set. The images shows the segmented seeps and their classes.
 'black' - Represents non-seep.
 'blue','red', 'green', 'brown', 'cyan','yellow','royalblue' - Represents the classes of seep 1-7 resp.
 
-⋅⋅* File named "trainval_loss.svg" contains the plot of cross entropy loss for training and validation set until Early Stopping.
+  * File named "trainval_loss.svg" contains the plot of cross entropy loss for training and validation set until Early Stopping.
