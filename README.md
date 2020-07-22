@@ -1,3 +1,5 @@
+# Seep Segmentation
+
 ## Steps to run:
 
 Step 1: Install the requirements mentioned in the file "requirements.txt"  
