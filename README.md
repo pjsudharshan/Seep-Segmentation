@@ -18,7 +18,7 @@ Example Run: "python train.py -tb 8 -e 100"
 ```
 
 
-## Short note on the architecture:
+## Short notes on the architecture:
 
 The architecture is based on UNet which is well known for segmentation. It is basically an auto-encoder with skip connections. Intitially the network downsamples the input image by passing through convolutional layers and max-pooling after each convolution. The learned features at the final downsampling layer is then passed through upsampling convolutional layers, which uses bilinear upsampling after each convolution to enlarge the prediction. To improve accuracy and stability, residual connections are formed between the downsampling layers and the upsampling layers to allow features of different resolutions to be shared between the two segments of the network. Finally, at the output of the last convolutional layer, softmax activation is applied to produce an 8 channel prediction (for 0-7 classes) with the same height and width as the input image, where each pixel location contains the predicted probability of the class of seep.  
 
